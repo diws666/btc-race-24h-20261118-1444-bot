@@ -1,6 +1,12 @@
 // Deep Dip 60: a dip-buying mean-reversion bot for cbBTC (CBBTC/USDC).
 //
-// Rules, all in integer arithmetic (bigint, no floats, no randomness):
+// Tuned on the 1444 dev window (and checked on the 0603 window): a deeper
+// dip (160 bps over 60 bars) and a wider stop (120 bps) keep the bot out of
+// shallow dips that keep falling and out of stops that fire just before a
+// recovery; the take-profit at 175 bps banks the bounce. The wider stop
+// matters: at 80 bps the stop locks in a loss right before the recovery,
+// and the edge vanishes when fees double; at 120 bps the position survives
+// to the take-profit on both windows at 1x and at 2x fees.
 //   - Track every batch's bar close. Once more than HORIZON closes are seen,
 //     compare the close HORIZON bars ago with the latest close.
 //   - FLAT: if the close fell at least DIP_BPS over the last HORIZON bars,
@@ -17,10 +23,10 @@
 import { runBars, type Bar, type BarsState, type Batch, type BuyInput, type SellInput } from './vendor/makefun-bars.ts';
 
 const HORIZON = 60;
-const DIP_BPS = 110;
+const DIP_BPS = 160;
 const TRAIL_BPS = 80;
-const TP_BPS = 200;
-const SL_BPS = 80;
+const TP_BPS = 175;
+const SL_BPS = 120;
 const MAX_SLIPPAGE_BPS = 100;
 
 const closes: bigint[] = [];
